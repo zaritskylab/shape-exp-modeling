@@ -1,15 +1,17 @@
 
-# Project Title
+# Modeling the interplay between cell shape and expression in multiplexed imaging
 
-![Project Image](path_to_your_image)
+![Project Image](https://github.com/YuvalTamir2/shape-exp-modeling/blob/main/Images/forGit_page-0001.jpg)
 
 ## Summary
 
 This project is based on the article [Data-modeling the interplay between single cell shape, single cell protein expression, and tissue state](https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1). The study combines spatial multiplexed single-cell imaging and machine learning to explore the intricate relationships between cell shape and protein expression within human tissues. The results highlight a universal bi-directional link between cell shape and protein expression across various cell types and disease states. This research opens new avenues for understanding cellular behavior and improving disease state predictions.
 
-## Example Usage
+## Example Analysis Usage
 
 First, let's import the necessary modules and process the data.
+We start with reading the cells.csv and extracting shape features (and more, depends on the mode arg)
+for every sample we have : 
 
 ```python
 import pandas as pd
@@ -18,9 +20,9 @@ import utils
 from ProcessData import CellsDataSetTNBC
 tnbc_df = pd.read_csv(r'cellData.csv')
 types = pd.read_csv(r'MIBI_TNBC_idx_cell_to_type.csv')
-###
+### for this example, we will only analyze patient 1.
 tnbc_df = tnbc_df[tnbc_df['SampleID'].isin([1])]
-###tnbc cols to drop
+###tnbc cols to drop, noise columns..
 cols_to_drop = ['cellSize','C','Na','Si','P','Ca','Fe','Background','B7H3','OX40','CD163', 'CSF-1R',
                 'Ta','Au','tumorYN','tumorCluster','Group','immuneCluster','immuneGroup']
 
@@ -61,8 +63,8 @@ tnbc_train_data, tnbc_train_patients_id,tnbc_test_data, tnbc_test_patients_id = 
 
 ### model HP : 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-EPOCHS = 2500
-tnbc_lr = 4e-3
+EPOCHS = 100 # in this demo we will run for 100, adjust as needed..
+tnbc_lr = 4e-3 # in this demo we will run for 100, adjust as needed..
 
 ##load models :
 tnbc_model_full = SimpleLinearNet(in_features = tnbc_train_data[0]['x'].shape[1], out_features = tnbc_train_data[0]['y'].shape[1]).to(device)
@@ -91,15 +93,38 @@ utils.plot(df)
 ```
 ![MicroEvn_Example](https://github.com/YuvalTamir2/shape-exp-modeling/blob/main/Images/example_models_compare.png)
 
-### Model Evaluation
+### Model Infrence
 
-Finally, we'll look at the ft importance.
+Next, we'll look at the ft importance.
 
 ```python
 importance_df = utils.feature_importance(tnbc_model_full.to(device), tnbc_train_data[0]['x'].to(device), num_target_features = 36)
 utils.plot_importance(subset = 'Cell State')
 ```
 ![MicroEvn_Example](https://github.com/YuvalTamir2/shape-exp-modeling/blob/main/Images/example_ft_improtance.png)
+
+Finally, we'll look at the imporvemnt matrix.
+
+```python
+### read the saved csv of the cells and shape features:
+data = pd.read_csv('cells_plus_shape.csv')
+utils.plot_heatmap(data,
+                   shape_fts = [area','eccentricity', 'major_axis_length',
+                                'minor_axis_length', 'perimeter',
+                                'equivalent_diameter_area', 'convex_area',
+                                'extent', 'feret_diameter_max','orientation',
+                                'perimeter_crofton', 'solidity', 'cell type'],
+                   proteins = ['dsDNA', 'Vimentin', 'SMA', 'FoxP3', 'Lag3', 'CD4',
+                               'CD16', 'CD56', 'PD1', 'CD31', 'PD-L1', 'EGFR', 'Ki67',
+                               'CD209', 'CD11c', 'CD138', 'CD68', 'CD8', 'CD3', 'IDO',
+                               'Keratin17', 'CD63', 'CD45RO', 'CD20', 'p53', 'Beta catenin',
+                               'HLA-DR', 'CD11b', 'CD45', 'H3K9ac', 'Pan-Keratin', 'H3K27me3',
+                               'phospho-S6', 'MPO', 'Keratin6', 'HLA_Class_1']
+
+```
+![MicroEvn_Example]
+
+
 
 For more detailed examples and explanations, please refer to the [Shape2Exp_Demo.ipynb](Shape2Exp_Demo.ipynb) notebook included in this repository.
 
