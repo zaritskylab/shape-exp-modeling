@@ -5,7 +5,9 @@
 
 ## Summary
 
-This project is based on the article [Data-modeling the interplay between single cell shape, single cell protein expression, and tissue state](https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1). The study combines spatial multiplexed single-cell imaging and machine learning to explore the intricate relationships between cell shape and protein expression within human tissues. The results highlight a universal bi-directional link between cell shape and protein expression across various cell types and disease states. This research opens new avenues for understanding cellular behavior and improving disease state predictions.
+This project is based on the article [Data-modeling the interplay between single cell shape, single cell protein expression, and tissue state](https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1). 
+The study combines spatial multiplexed single-cell imaging and machine learning to explore the intricate relationships between cell shape and protein expression within human tissues. 
+The results highlight a bi-directional link between cell shape and protein expression across various cell types and disease states. 
 
 ## Example Analysis Usage
 
@@ -83,7 +85,7 @@ best_loss_null = 100
 
 #### Training loop!
 tnbc_model_full = utils.train_eval(mode = 'full')
-tnbc_model_null = utils.train_eval(model = 'null)
+tnbc_model_null = utils.train_eval(model = 'null')
 ## save best models:
 tnbc_models = {'full' : tnbc_model_full, 'null' : tnbc_model_null}
 test_trues_b, test_preds_b = utils.getPreds(tnbc_models, tnbc_test_data, device, mode = 'null')
