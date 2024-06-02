@@ -108,7 +108,7 @@ Finally, we'll look at the imporvemnt matrix.
 ```python
 ### read the saved csv of the cells and shape features:
 data = pd.read_csv('cells_plus_shape.csv')
-utils.plot_heatmap(data,
+utils.heatmap_create(data,
                    shape_fts = [area','eccentricity', 'major_axis_length',
                                 'minor_axis_length', 'perimeter',
                                 'equivalent_diameter_area', 'convex_area',

@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from sklearn.metrics import r2_score, mean_squared_error
 import random
+from sklearn.linear_model import Ridge, ElasticNet
 from sklearn.decomposition import PCA
 from numpy.polynomial.polynomial import polyfit
 import numpy as np
+import seaborn as sns
 from scipy.stats import chi2
 from captum.attr import LayerConductance, LayerActivation, LayerIntegratedGradients
 from captum.attr import IntegratedGradients, DeepLift, GradientShap, NoiseTunnel, FeatureAblation
@@ -388,6 +390,70 @@ def screenImprovment(model, loader_dict, device, improv_metric,unique_cells = 16
     if improv_metric == 'mse':
         return nmatrix - fmatrix
 
+def heatmap_create(data, model,  shape, proteins):
+    # Define the predictors and the target
+    predictors = data[shape]
+    target = data[proteins]
+
+    # Get unique cell types
+    cell_types = data['cell type'].unique()
+
+    # Initialize variables to store the best configuration and heatmap
+    best_delta_r2_df = None
+    best_params = None
+    best_score = -np.inf
+
+    # Define the range of parameters to explore 
+    alpha_values = [5]
+    test_sizes = [0.2]
+    random_states = [3]
+    Model = Ridge()
+    # Iterate over different configurations
+    for alpha in alpha_values:
+        for test_size in test_sizes:
+            for random_state in random_states:
+                delta_r2_df = pd.DataFrame(columns=target.columns, index=cell_types)
+                for cell_type in cell_types:
+                    cell_type_data = data[data['cell type'] == cell_type]
+                    cell_type_predictors = cell_type_data[shape]
+                    cell_type_target = cell_type_data[target.columns]
+                    X_train, X_test, y_train, y_test = train_test_split(cell_type_predictors, cell_type_target, test_size=test_size, random_state=random_state)
+                    baseline_model = y_train.mean()
+                    baseline_predictions = np.repeat(baseline_model.values.reshape(1, -1), len(X_test), axis=0)
+                    baseline_scores = r2_score(y_test, baseline_predictions, multioutput='raw_values')
+                    model = Model(alpha=alpha)
+                    model.fit(X_train, y_train)
+                    model_predictions = model.predict(X_test)
+                    model_scores = r2_score(y_test, model_predictions, multioutput='raw_values')
+                    # Calculate the delta R2 scores between the shape-aware model and the baseline model
+                    delta_r2_scores = model_scores - baseline_scores
+                    delta_r2_df.loc[cell_type] = delta_r2_scores
+                positive_score = np.sum(delta_r2_df.values >= 0.0)
+
+                # Check if the current configuration is better than the best so far
+                if positive_score > best_score:
+                    best_score = positive_score
+                    best_delta_r2_df = delta_r2_df.copy()
+                    best_params = {'alpha': alpha, 'test_size': test_size, 'random_state': random_state}
+
+    # Print the best configuration and score
+    # print("Best Configuration:")
+    # print("Alpha:", best_params['alpha'])
+    # print("Test Size:", best_params['test_size'])
+    # print("Random State:", best_params['random_state'])
+    # print("Positive Score:", best_score)
+    # print(len(data[data['cell type'] == 5]))
+    # print(len(data))
+    # Create a heatmap of the best delta R2 scores
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(best_delta_r2_df.astype(float), cmap='PiYG', linewidths=0.5, center=0, vmin=0.0, vmax=0.03)
+    plt.xlabel('Proteins')
+    plt.ylabel('Cell Types')
+    plt.title('Best Delta R2 Scores: Shap-aware vs Baseline Model')
+    plt.show()
+
+
+
 def buildBoxPlotR2(all_trues, all_preds):
     bbox_dict = {'model':[], 'r2_val':[]}
     for mode in ['neighbors', 'neighbors_morph']:
@@ -438,3 +504,5 @@ def plot_importance(impotance_results_df,
     ax.set_ylabel('Attribution')
     if save:
         plt.savefig(f'{name}', bbox_inches='tight')    
+
+
