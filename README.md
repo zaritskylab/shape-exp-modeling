@@ -129,6 +129,7 @@ utils.heatmap_create(data,
 
 
 For more detailed examples and explanations, please refer to the [Shape2Exp_Demo.ipynb](Shape2Exp_Demo.ipynb) notebook included in this repository.
+*IMPOTANT* make sure to download a sample from the raw data [here](https://drive.google.com/drive/folders/1HyPIAKVM44XB4ef_h-1_CQiGHmveWTID?usp=sharing) and put it in the same dir as Shape2Exp_Demo.ipynb
 
 ## Contributing
 
