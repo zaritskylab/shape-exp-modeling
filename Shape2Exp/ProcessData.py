@@ -454,4 +454,177 @@ class CellsDataSetTB(Dataset):
         
           onehot_neighbors = self.OneHotNeighbors(cell_types_neighbors)
           return np.concatenate([cell_type_vector,batch_vector,props,onehot_neighbors, num_cells], axis = 0).astype(float), y, (sampleID, cell_index)
+            
+        
+
+class CellsDataSetTB(Dataset):
+    def __init__(self, data_path, sc_csv, mode):
+        '''
+        sc_csv : path to the allTB-sarcoid data
+        mode : which type od dataset to build.
+                baseline : only cell type as input
+                baseline_morph : baseline + morph fts
+                baselineID : cell type + patient ID as input
+                baselineID_morph : baselineID + morph features
+                neighbors : celltype+patientID+neighbors
+                neighbors_morph : neighbors + morph
+        '''
+        
+       #reduce the sc data only to patients with segmentation mask for morph features extraction : 
+        self.mode = mode
+        self.data_path = data_path
+        le = preprocessing.LabelEncoder()
+        df = sc_csv
+        
+        print('Welcome to prioMorph! TB')
+        print('Building cells dicts..')
+
+        self.segmentations_paths = glob.glob(f'{self.data_path}/spatialLDA_input/segmentation_masks/*.tif')
+        self.names = []
+        for i in self.segmentations_paths:
+            match = re.findall(r'\d+', i)
+            self.names.append(int(match[0]))
+        self.final = df[df['SampleID'].isin(self.names)]
+        self.final['cellType'] = le.fit_transform(self.final['cell_type'])
+        self.totalCellTypes = self.final['cellType'].max()
+        self.totalPatients = self.final['SampleID'].nunique()
+        print(f'total annotated cell types : {self.totalCellTypes}')
+        print(f'total patients : {self.totalPatients}')
+        print(le.inverse_transform(list(range(20))))
+        if (self.mode.split('_')[-1] == 'morph') or (self.mode == 'neighbors'):
+            self.final_props = self.get_props()
+        
+        
+        
+    def get_props(self):
+        props_list = ['label', 'centroid', 'area', 'eccentricity','major_axis_length',
+                      'minor_axis_length','perimeter','equivalent_diameter_area','euler_number','extent',
+                     'feret_diameter_max','orientation','perimeter_crofton','solidity']
+        final_props = {}
+        self.cellIndexPerPatient = {}
+        for name, img in tqdm(zip(self.names, self.segmentations_paths), total = len(self.names)):
+            im = imageio.imread(img)
+            self.cellIndexPerPatient[name] = im
+            props_single_cell = pd.DataFrame(measure.regionprops_table(im, properties = props_list))
+            final_props[int(name)] = props_single_cell            
+        return final_props
+              
+    def CellTypeVector(self,cellType):
+        # 0's vector in size of cell types
+        cellType -= 1
+        onehot = np.zeros(shape = self.totalCellTypes)   
+        onehot[cellType] = 1
+        return onehot
+              
+    def oneHotPatient(self,SampleID):
+        # 0's vector in size of cell types
+        patient_index = np.argmax(self.final['SampleID'].unique() == SampleID)
+        #patient_index = int(self.final[self.final['SampleID'] == SampleID].index)
+        onehot = np.zeros(shape = self.totalPatients)   
+        onehot[patient_index] = 1
+        return onehot
+    def OneHotNeighbors(self, cell_type_neighbors):
+        cells = np.zeros(self.totalCellTypes + 1)
+        cells[cell_type_neighbors] = 1
+        return cells
+   
+    def view_neighbors(self, patientID, cellIndex):
+        all_props = self.final_props[patientID]
+        props = all_props[all_props['label'] == cellIndex].values.ravel()[:-1]
+        row_cord, col_cord = int(props[1]), int(props[2])
+        props = props[3:]
+        x0 = row_cord - 100 if row_cord - 100 > 0 else 0
+        y0 = col_cord - 100 if col_cord - 100 > 0 else 0
+        x1 = row_cord + 100 if row_cord + 100 < 2048 else 2048
+        y1 = col_cord + 100 if col_cord + 100 < 2048 else 2048
+        x = 100 if col_cord - 100 > 0 else col_cord
+        y = 100 if row_cord - 100 > 0 else row_cord
+        array = self.cellIndexPerPatient[patientID][x0:x1,y0:y1]#[x0:row_cord + 300,y0:col_cord + 300]
+        radius = int(2.5 * 28) ## 2.5 micron per 1 pixel. we want radius of 70 microns, so 2.5 * 28 pixels
+        mask = np.zeros(array.shape)
+        mask = cv2.circle(mask, (x,y), radius,color = (1, 0, 0), thickness = -1)
+        out = mask * array
+        #out = out[out != 0]
+        plt.scatter([x], [y], c = 'k')
+        plt.imshow(out, cmap = 'rainbow')
+              
+    def __len__(self):
+        return self.final.shape[0]
+    
+    def __getitem__(self, index):
+        cell_of_intrest = self.final.iloc[index, :]
+        y = cell_of_intrest.iloc[5:-7].values.astype(float)
+        cell_label = cell_of_intrest['cellLabelInImage']
+        sampleID = int(cell_of_intrest['SampleID'])
+        cell_index = int(cell_of_intrest['cellLabelInImage'])
+        cell_type = int(cell_of_intrest.iloc[-1])
+        cell_type_vector = self.CellTypeVector(cell_type)
+        if self.mode == 'baseline':
+              return cell_type_vector, y, (sampleID, cell_index)
+        if self.mode == 'baseline_morph':
+              props = self.final_props[sampleID]
+              prop = props[props['label'] == cell_index].iloc[:,3:].values.flatten()
+              return np.concatenate([cell_type_vector, prop], axis = 0), y, (sampleID, cell_index)
+        if self.mode == 'patientID':
+            one_hot_patient = self.oneHotPatient(sampleID)
+            return np.concatenate([cell_type_vector, one_hot_patient], axis = 0), y, (sampleID, cell_index)
+        if self.mode == 'patientID_morph':
+            props = self.final_props[sampleID]
+            prop = props[props['label'] == cell_index].iloc[:,3:].values.flatten()
+            one_hot_patient = self.oneHotPatient(sampleID)
+            return np.concatenate([cell_type_vector, one_hot_patient,prop], axis = 0), y, (sampleID, cell_index)
+        if self.mode == 'neighbors':
+          batch_vector = self.oneHotPatient(sampleID)
+          props = self.final_props[sampleID]
+          prop = props[props['label'] == cell_index].values.flatten()
+          row_cord, col_cord = int(prop[1]), int(prop[2])
+          props = prop[3:]
+          x0 = row_cord - 100 if row_cord - 100 > 0 else 0
+          y0 = col_cord - 100 if col_cord - 100 > 0 else 0
+          x1 = row_cord + 100 if row_cord + 100 < 2048 else 2048
+          y1 = col_cord + 100 if col_cord + 100 < 2048 else 2048
+          x_c = 100 if col_cord - 100 > 0 else col_cord
+          y_c = 100 if row_cord - 100 > 0 else row_cord
+          array = self.cellIndexPerPatient[sampleID][x0:x1,y0:y1]#[x0:row_cord + 300,y0:col_cord + 300]
+          radius = int(2.5 * 28) ## 2.5 micron per 1 pixel. we want radius of 70 microns, so 2.5 * 28 pixels
+          mask = np.zeros(array.shape)
+          mask = cv2.circle(mask, (x_c,y_c), radius,color = (1, 0, 0), thickness = -1)
+          out = mask * array
+          self.out = out[out != 0]
+          ## get neghbors cell type
+          cell_label_neighbors = np.unique(out).astype(int)
+          cell_types_neighbors = self.final[self.final['cellType'].isin(cell_label_neighbors)]['cellType'].unique()
+          ### get number of cells in the neighborhood
+          p_df = self.final[self.final['SampleID'] == sampleID]
+          num_cells = [len(p_df[p_df['cellLabelInImage'].isin(cell_label_neighbors)]['cellLabelInImage'].unique())]
+        
+          onehot_neighbors = self.OneHotNeighbors(cell_types_neighbors)
+          return np.concatenate([cell_type_vector,batch_vector,onehot_neighbors, num_cells], axis = 0).astype(float), y, (sampleID, cell_index)
+        if self.mode == 'neighbors_morph':
+          batch_vector = self.oneHotPatient(sampleID)
+          props = self.final_props[sampleID]
+          prop = props[props['label'] == cell_index].values.flatten()
+          row_cord, col_cord = int(prop[1]), int(prop[2])
+          props = prop[3:]
+          x0 = row_cord - 100 if row_cord - 100 > 0 else 0
+          y0 = col_cord - 100 if col_cord - 100 > 0 else 0
+          x1 = row_cord + 100 if row_cord + 100 < 2048 else 2048
+          y1 = col_cord + 100 if col_cord + 100 < 2048 else 2048
+          x_c = 100 if col_cord - 100 > 0 else col_cord
+          y_c = 100 if row_cord - 100 > 0 else row_cord
+          array = self.cellIndexPerPatient[sampleID][x0:x1,y0:y1]#[x0:row_cord + 300,y0:col_cord + 300]
+          radius = int(2.5 * 28) ## 2.5 micron per 1 pixel. we want radius of 70 microns, so 2.5 * 28 pixels
+          mask = np.zeros(array.shape)
+          mask = cv2.circle(mask, (x_c,y_c), radius,color = (1, 0, 0), thickness = -1)
+          out = mask * array
+          self.out = out[out != 0]
+          ## get neghbors cell type
+          cell_label_neighbors = np.unique(out).astype(int)
+          cell_types_neighbors = self.final[self.final['cellType'].isin(cell_label_neighbors)]['cellType'].unique()
+          ### get number of cells in the neighborhood
+          p_df = self.final[self.final['SampleID'] == sampleID]
+          num_cells = [len(p_df[p_df['cellLabelInImage'].isin(cell_label_neighbors)]['cellLabelInImage'].unique())]
+        
+          onehot_neighbors = self.OneHotNeighbors(cell_types_neighbors)
+          return np.concatenate([cell_type_vector,batch_vector,props,onehot_neighbors, num_cells], axis = 0).astype(float), y, (sampleID, cell_index)
     
