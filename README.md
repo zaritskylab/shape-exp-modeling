@@ -1,144 +1,103 @@
+# Shape-Expression Modeling
 
-# Modeling the interplay between cell shape and expression in multiplexed imaging
+A bidirectional machine learning framework for modeling the interplay between single cell shape and protein expression, based on [this paper](https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1). The framework combines spatial multiplexed single-cell imaging data with machine learning to explore the relationships between cell morphology and protein expression in both directions.
 
-![Project Image](https://github.com/YuvalTamir2/shape-exp-modeling/blob/main/Images/forGit_page-0001.jpg)
+## Features
 
-## Summary
+- **Bidirectional modeling**: Shape → Protein expression AND Protein → Shape
+- **Multiple model types**: Linear Models and Fully-connected netword
+- **Statistical rigor**: Uses Adjusted R² to account for feature count
+- **Per-patient analysis**: Individual patient-level performance evaluation
+- **Command-line interface**: Easy-to-use CLI with extensive configuration options
 
-This project is based on the article [Data-modeling the interplay between single cell shape, single cell protein expression, and tissue state](https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1). 
-The study combines spatial multiplexed single-cell imaging and machine learning to explore the intricate relationships between cell shape and protein expression within human tissues. 
-The results highlight a bi-directional link between cell shape and protein expression across various cell types and disease states. 
+## Installation
 
-## Example Analysis Usage
+```bash
+# 1. Clone and navigate
+git clone https://github.com/zaritskylab/shape-exp-modeling.git
+cd shape-exp-modeling
 
-First, let's import the necessary modules and process the data.
-We start with reading the cells.csv and extracting shape features (and more, depends on the mode arg)
-for every sample we have : 
+# 2. Create and activate environment
+conda create -n shape_exp python=3.10.9
+conda activate shape_exp
 
-```python
-import pandas as pd
-###
-import utils
-from ProcessData import CellsDataSetTNBC
-tnbc_df = pd.read_csv(r'cellData.csv')
-types = pd.read_csv(r'MIBI_TNBC_idx_cell_to_type.csv')
-### for this example, we will only analyze patient 1.
-tnbc_df = tnbc_df[tnbc_df['SampleID'].isin([1])]
-###tnbc cols to drop, noise columns..
-cols_to_drop = ['cellSize','C','Na','Si','P','Ca','Fe','Background','B7H3','OX40','CD163', 'CSF-1R',
-                'Ta','Au','tumorYN','tumorCluster','Group','immuneCluster','immuneGroup']
+# 3. Install dependencies
+pip install -r requirements.txt
 
-tnbc_neighbors_data = CellsDataSetTNBC(data_path = r'.',
-                                         cells_data_df = tnbc_df,
-                                         types_present_in_csv = True,
-                                         cols_to_drop = cols_to_drop,
-                                         types_data_df = types,
-                                         meta_data_df = None,
-                                         mode = 'neighbors_morph')
-print()
-print('###'*15)
-print()
-## view example of a cell and it's microenv:
-tnbc_neighbors_data.view_neighbors(1, 500)
+# 4. Install the package in development mode
+pip install -e .
 ```
-![MicroEvn_Example](https://github.com/YuvalTamir2/shape-exp-modeling/blob/main/Images/example_microenv.png)
 
-### Model Training
+## Data Requirements
 
-Next, we'll train and eval a model using the processed data.
+The framework requires processed CSV data with:
+- **SampleID**: Patient/sample identifier
+- **CellType**: Cell type classification  
+- **Shape features**: Morphological measurements (e.g., cellSize, perimeter, solidity)
+- **Protein markers**: Expression levels of functional proteins
 
-```python
-import utils
-from torch.utils.data import DataLoader
-from models import SimpleLinearNet
-import copy
-import torch
-from tqdm import tqdm
-from sklearn.metrics import r2_score
-## data generator
-tnbc_neighbors_loader  = DataLoader(tnbc_neighbors_data, batch_size = 64, shuffle = True)
-## load to disk for faster training
-tnbc_dataset, tnbc_batches, tnbc_patients_ids = utils.buildDataSet(tnbc_neighbors_loader)
-## train-test split
-tnbc_train_data, tnbc_train_patients_id,tnbc_test_data, tnbc_test_patients_id = utils.train_test_split(tnbc_dataset, 
-                                                                                                tnbc_patients_ids)
+See the [data/README.md](data/README.md) for more detailes.
 
-### model HP : 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-EPOCHS = 100 # in this demo we will run for 100, adjust as needed..
-tnbc_lr = 4e-3 # in this demo we will run for 100, adjust as needed..
+## Basic Usage
 
-##load models :
-tnbc_model_full = SimpleLinearNet(in_features = tnbc_train_data[0]['x'].shape[1], out_features = tnbc_train_data[0]['y'].shape[1]).to(device)
-tnbc_model_null = SimpleLinearNet(in_features = tnbc_train_data[0]['x'].shape[1] - 12, out_features = tnbc_train_data[0]['y'].shape[1]).to(device)
+```bash
+# Shape → Protein
+python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction shape2pro
 
-### params for each model
-tnbc_criterion = torch.nn.MSELoss()
-tnbc_optimizer_full = torch.optim.Adam(params = tnbc_model_full.parameters(), lr = tnbc_lr)
-tnbc_optimizer_null = torch.optim.Adam(params = tnbc_model_null.parameters(), lr = tnbc_lr)
-
-### track loss
-tnbc_train_loss = {'null' : [], 'full' : []}
-tnbc_val_loss = {'null' : [], 'full' : []}
-best_loss_full = 100
-best_loss_null = 100
-
-#### Training loop!
-tnbc_model_full = utils.train_eval(mode = 'full')
-tnbc_model_null = utils.train_eval(model = 'null')
-## save best models:
-tnbc_models = {'full' : tnbc_model_full, 'null' : tnbc_model_null}
-test_trues_b, test_preds_b = utils.getPreds(tnbc_models, tnbc_test_data, device, mode = 'null')
-test_trues_bm, test_preds_bm = utils.getPreds(tnbc_models, tnbc_test_data,device, mode = 'full')
-df = buildBoxPlotR2()
-utils.plot(df)
+# Protein → Shape 
+python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction pro2shape
 ```
-![MicroEvn_Example](https://github.com/YuvalTamir2/shape-exp-modeling/blob/main/Images/example_models_compare.png)
 
-### Model Infrence
-
-Next, we'll look at the ft importance.
-
-```python
-importance_df = utils.feature_importance(tnbc_model_full.to(device), tnbc_train_data[0]['x'].to(device), num_target_features = 36)
-utils.plot_importance(subset = 'Cell State')
-```
-![MicroEvn_Example](https://github.com/YuvalTamir2/shape-exp-modeling/blob/main/Images/example_ft_improtance.png)
-
-Finally, we'll look at the imporvemnt matrix.
-
-```python
-### read the saved csv of the cells and shape features:
-data = pd.read_csv('cells_plus_shape.csv')
-utils.heatmap_create(data,
-                   shape_fts = [area','eccentricity', 'major_axis_length',
-                                'minor_axis_length', 'perimeter',
-                                'equivalent_diameter_area', 'convex_area',
-                                'extent', 'feret_diameter_max','orientation',
-                                'perimeter_crofton', 'solidity', 'cell type'],
-                   proteins = ['dsDNA', 'Vimentin', 'SMA', 'FoxP3', 'Lag3', 'CD4',
-                               'CD16', 'CD56', 'PD1', 'CD31', 'PD-L1', 'EGFR', 'Ki67',
-                               'CD209', 'CD11c', 'CD138', 'CD68', 'CD8', 'CD3', 'IDO',
-                               'Keratin17', 'CD63', 'CD45RO', 'CD20', 'p53', 'Beta catenin',
-                               'HLA-DR', 'CD11b', 'CD45', 'H3K9ac', 'Pan-Keratin', 'H3K27me3',
-                               'phospho-S6', 'MPO', 'Keratin6', 'HLA_Class_1']
+## Project Structure
 
 ```
-![MicroEvn_Example](https://github.com/YuvalTamir2/shape-exp-modeling/blob/main/Images/screen.png)
+shape-exp-modeling/
+├── README.md                    # This file
+├── requirements.txt             # Package requirements
+├── main.py                     # Main CLI script
+├── Exp2Shape/                  # Experiment to shape analysis
+│   ├── analyze
+│   ├── buildData.py
+│   └── mainBaseline.py
+├── GCN/                        # Graph Convolutional Network implementation
+│   ├── Data.py
+│   ├── models.py
+│   ├── train_eval.py
+│   └── utils.py
+├── Images/                     # Image assets
+├── Shape2Exp/                  # Shape to expression analysis
+│   ├── ProcessData.py
+│   ├── Shape2Exp_Demo.ipynb
+│   ├── main.py
+│   ├── models.py
+│   └── utils.py
+└── data/                       # Data directory
+```
 
-
-
-For more detailed examples and explanations, please refer to the [Shape2Exp_Demo.ipynb](Shape2Exp_Demo.ipynb) notebook included in this repository.
-*IMPOTANT* make sure to download a sample from the raw data [here](https://drive.google.com/drive/folders/1HyPIAKVM44XB4ef_h-1_CQiGHmveWTID?usp=sharing) and put it in the same dir as Shape2Exp_Demo.ipynb
 
 ## Contributing
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit your changes (`git commit -m 'Add some feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Open a pull request.
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature-branch`)
+3. Make your changes
+4. Add tests for new functionality
+5. Commit your changes (`git commit -m 'Add some feature'`)
+6. Push to the branch (`git push origin feature-branch`)
+7. Open a pull request
+
+## Citation
+
+If you use this implementation in your research, please cite:
+
+```bibtex
+@article{shape_exp_modeling2024,
+  title={Data-modeling the interplay between single cell shape, single cell protein expression, and tissue state},
+  author={Tamir, Yuval and Bussi, Yuval and Owczarek, Claudia and Luque, Luciana and Torrisi, Giuseppe and Rose, Leor Ariel and Kliper-Gross, Orit and Sander, Chris and Schumacher, Linus and Parsons, Maddy and Keren, Leeat and Zaritsky, Assaf},
+  journal={bioRxiv},
+  year={2024},
+  url={https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1}
+}
+```
 
 ## License
 
