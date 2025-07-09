@@ -2,6 +2,8 @@
 
 A bidirectional machine learning framework for modeling the interplay between single cell shape and protein expression, based on [this paper](https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1). The framework combines spatial multiplexed single-cell imaging data with machine learning to explore the relationships between cell morphology and protein expression in both directions.
 
+![Shape-Expression Modeling](Images/forGit_page-0001.jpg)
+
 ## Features
 
 - **Bidirectional modeling**: Shape → Protein expression AND Protein → Shape
