@@ -21,7 +21,7 @@ python main.py --data_path data/ProcessedCellsTNBC.csv --direction shape2pro
 ## Processing Example
 
 To convert raw data to processed format, see the example in `Shape2Exp/ProcessData.py`:
-צ
+
 ```python
 from Shape2Exp.ProcessData import CellsDataSetTNBC
 
