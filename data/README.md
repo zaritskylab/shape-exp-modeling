@@ -1,6 +1,6 @@
 # Data Directory
 
-This directory contains datasets for the Shape-Expression Modeling framework.
+This directory contains example TNBC dataset for the Shape-Expression Modeling framework.
 
 ## Data Types
 
