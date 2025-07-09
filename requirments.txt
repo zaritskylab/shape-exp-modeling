@@ -21,3 +21,5 @@ scanpy
 umap-learn
 statsmodels
 pyyaml
+captum
+opencv-python
