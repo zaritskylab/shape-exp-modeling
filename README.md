@@ -30,7 +30,7 @@ pip install -r requirments.txt
 
 ## Data Requirements
 
-The framework requires processed CSV data with:
+The framework requires processed single cell CSV data with:
 - **SampleID**: Patient/sample identifier
 - **CellType**: Cell type classification  
 - **Shape features**: Morphological measurements (e.g., cellSize, perimeter, solidity)
