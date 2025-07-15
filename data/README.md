@@ -10,7 +10,7 @@ This directory contains example TNBC dataset for the Shape-Expression Modeling f
 - **Usage**: Can be used directly with the main analysis pipeline
 
 ```bash
-python main.py --data_path data/ProcessedCellsTNBC.csv --direction shape2pro
+python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction shape2pro
 ```
 
 ### Raw Data
