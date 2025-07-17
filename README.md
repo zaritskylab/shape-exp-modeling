@@ -36,9 +36,8 @@ The framework requires processed single cell CSV data with:
 - **Shape features**: Morphological measurements (e.g., cellSize, perimeter, solidity)
 - **Protein markers**: Expression levels of functional proteins
 
-See the [data/README.md](data/README.md) for more detailes.
+See the [data/README.md](data/README.md) for more details and CSV creation.
 
-For an example of the pipeline from raw data to prediction, using shape-aware models on TNBC, visit [here](https://github.com/zaritskylab/shape-exp-modeling/blob/main/Shape2Exp/Shape2Exp_Demo.ipynb)
 ## Basic Usage
 
 ```bash
@@ -48,6 +47,7 @@ python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction shape2
 # Protein → Shape 
 python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction pro2shape
 ```
+For an example of the pipeline from raw data to prediction, using shape-aware models on TNBC, visit [here](https://github.com/zaritskylab/shape-exp-modeling/blob/main/Shape2Exp/Shape2Exp_Demo.ipynb)
 
 ## Project Structure
 
