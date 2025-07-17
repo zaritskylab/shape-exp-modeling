@@ -10,9 +10,9 @@ This directory contains example TNBC dataset for the Shape-Expression Modeling f
 - **Usage**: Can be used directly with the main analysis pipeline
 
 ### Raw Data
-- **CellDataDemo**: Cells table, with normalized expression per segment.
+- **CellData**: Cells table, with normalized expression per segment.
 - **idx_to_cell_type**: Mapper, the cell type classification per segment.
-- **Raw imaging data**: Download and put in the same dir. Available at [Google Drive](https://drive.google.com/drive/folders/1HyPIAKVM44XB4ef_h-1_CQiGHmveWTID?usp=sharing)
+- **Raw imaging data**: Download and put in the same dir. Available at [Link](https://mibi-share.ionpath.com/)
 
 ## Processing Example
 
