@@ -38,6 +38,7 @@ The framework requires processed single cell CSV data with:
 
 See the [data/README.md](data/README.md) for more detailes.
 
+For an example of the pipeline from raw data to prediction, using shape-aware models on TNBC, visit [here](https://github.com/zaritskylab/shape-exp-modeling/blob/main/Shape2Exp/Shape2Exp_Demo.ipynb)
 ## Basic Usage
 
 ```bash
