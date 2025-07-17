@@ -5,13 +5,9 @@ This directory contains example TNBC dataset for the Shape-Expression Modeling f
 ## Data Types
 
 ### Processed Data (Ready-to-Use)
-- **File**: `ProcessedCellsTNBC.csv`
+- **File**: `ProcessedCellsTNBC_sample.csv`
 - **Description**: Out-of-the-box demo dataset ready for immediate analysis
 - **Usage**: Can be used directly with the main analysis pipeline
-
-```bash
-python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction shape2pro
-```
 
 ### Raw Data
 - **CellDataDemo**: Cells table, with normalized expression per segment.
