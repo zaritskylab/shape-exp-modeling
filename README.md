@@ -1,6 +1,6 @@
 # Shape-Expression Modeling
 
-A bidirectional machine learning framework for modeling the interplay between single cell shape and protein expression, based on our paper -  [Data-modeling the interplay between single cell shape, single cell protein expression, and tissue state](https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1). The framework combines spatial multiplexed single-cell imaging data with machine learning to explore the relationships between cell morphology and protein expression in both directions.
+A bidirectional machine learning framework for modeling the interplay between single cell shape and protein expression, based on our paper -  [Data-modeling the interplay between single cell shape, single cell protein expression, and tissue state](https://www.biorxiv.org/content/10.1101/2024.05.29.595857v1). The framework combines spatial multiplexed single-cell imaging data with machine learning to explore the relationships between cell shape and protein expression in both directions. Given cell type and a prior (e.g. shape or expression), the framework quantifies how much predictive power the prior adds using ΔR² between a baseline and a prior-aware model, and plots the results per patient.
 
 ![Shape-Expression Modeling](Images/forGit_page-0001.jpg)
 
@@ -23,7 +23,7 @@ cd shape-exp-modeling
 conda create -n shape_exp python=3.10.9
 conda activate shape_exp
 
-# 3. Install dependencies
+# 3. Install dependencies (this may take up to 1 hour)
 pip install -r requirments.txt
 
 ```
