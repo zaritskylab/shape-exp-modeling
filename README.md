@@ -47,7 +47,7 @@ python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction shape2
 # Protein → Shape 
 python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction pro2shape
 ```
-For an example of the pipeline from raw data to prediction, using shape-aware models on TNBC, visit [here](https://github.com/zaritskylab/shape-exp-modeling/blob/main/Shape2Exp/Shape2Exp_Demo.ipynb)
+For an example of the pipeline from raw data to prediction, using shape-aware models on TNBC, visit [here](https://github.com/zaritskylab/shape-exp-modeling/blob/main/Demo/Shape2Exp.ipynb)
 
 ## Project Structure
 
