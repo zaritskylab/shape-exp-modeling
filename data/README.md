@@ -1,8 +1,8 @@
 # Data Directory
 
-This directory contains example TNBC dataset for the Shape-Expression Modeling framework.
+This directory contains the code to generate the TNBC csv for the full Shape-Expression Modeling framework.
 
-### Raw Data
+### Data
 - **CellData**: Cells table, with normalized expression per segment.
 - **idx_to_cell_type**: Mapper, the cell type classification per segment.
 - **Raw imaging data**: Download and put in the same dir. Available at [Link](https://mibi-share.ionpath.com/), from the paper [Link](https://pmc.ncbi.nlm.nih.gov/articles/PMC6785247/)
