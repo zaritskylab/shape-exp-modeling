@@ -6,11 +6,11 @@ A bidirectional machine learning framework for modeling the interplay between si
 
 ## Features
 
-- **Bidirectional modeling**: Shape → Protein expression AND Protein → Shape
-- **Multiple model types**: Linear Models and Fully-connected netword
-- **Statistical rigor**: Uses Adjusted R² to account for feature count
-- **Per-patient analysis**: Individual patient-level performance evaluation
-- **Command-line interface**: Easy-to-use CLI with extensive configuration options
+- **Bidirectional modeling**: shape → protein expression AND protein → shape
+- **Multiple model types**: linear models and fully-connected network
+- **Statistical rigor**: uses adjusted R² to account for feature count
+- **Per-patient analysis**: individual patient-level performance evaluation
+- **Command-line interface**: easy-to-use CLI with extensive configuration options
 
 ## Installation
 
@@ -33,10 +33,10 @@ pip install -r requirments.txt
 The framework requires processed single cell CSV data with:
 - **SampleID**: Patient/sample identifier
 - **CellType**: Cell type classification  
-- **Shape features**: Morphological measurements (e.g., cellSize, perimeter, solidity)
+- **Shape features**: Morphological measurements (e.g., cell size, perimeter, solidity)
 - **Protein markers**: Expression levels of functional proteins
 
-See the [data/README.md](data/README.md) for more details and CSV creation.
+See the [data/README.md](data/README.md) for CSV creation.
 
 ## Basic Usage
 
@@ -47,16 +47,16 @@ python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction shape2
 # Protein → Shape 
 python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction pro2shape
 ```
-For an example of the pipeline from raw data to prediction, using shape-aware models on TNBC, visit [here](https://github.com/zaritskylab/shape-exp-modeling/blob/main/Demo/Shape2Exp.ipynb)
+For a step-by-step demo of the pipeline (on a small dataset) from raw data to prediction, using shape-aware models on TNBC, visit [here](https://github.com/zaritskylab/shape-exp-modeling/blob/main/Demo/)
 
 ## Project Structure
 
 ```
 shape-exp-modeling/
-├── README.md                    # This file
-├── requirements.txt             # Package requirements
+├── README.md                   # This file
+├── requirements.txt            # Package requirements
 ├── main.py                     # Main CLI script
-├── Exp2Shape/                  # Experiment to shape analysis
+├── Exp2Shape/                  # Expression to shape analysis
 │   ├── analyze
 │   ├── buildData.py
 │   └── mainBaseline.py
@@ -68,11 +68,12 @@ shape-exp-modeling/
 ├── Images/                     # Image assets
 ├── Shape2Exp/                  # Shape to expression analysis
 │   ├── ProcessData.py
-│   ├── Shape2Exp_Demo.ipynb
 │   ├── main.py
 │   ├── models.py
 │   └── utils.py
-└── data/                       # Data directory
+├── Demo/                       # Demo
+|   ├── Shape2Exp_Demo.ipynb
+└── data/                       # Data creation dir
 ```
 
 
