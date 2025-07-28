@@ -2,14 +2,13 @@
 
 This directory contains the code to generate the TNBC csv for the full Shape-Expression Modeling framework.
 
-### Data
+### Data (add, that the full data should be downloaded, and fix the naming!)
 - **CellData**: Cells table, with normalized expression per segment.
 - **idx_to_cell_type**: Mapper, the cell type classification per segment.
 - **Raw imaging data**: Download and put in the same dir. Available at [Link](https://mibi-share.ionpath.com/), from the paper [Link](https://pmc.ncbi.nlm.nih.gov/articles/PMC6785247/)
 
-## Processing Example
-
-To convert raw data to processed format, see the example in `Shape2Exp/ProcessData.py`:
+## Processing
+This code reproduces this file : ProcessedCellsTNBC.csv
 
 ```python
 import pandas as pd
