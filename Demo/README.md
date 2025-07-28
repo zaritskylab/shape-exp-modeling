@@ -1,8 +1,7 @@
-A complete pipeline. It supports processing and analysing the dataset from scratch.
+A complete pipeline demo. It supports processing and analysing a subset dataset example from scratch.
 
 ---
 
-Before running the pipeline, you must download the required dataset. and example for one patient can be found [here](https://drive.google.com/drive/u/0/folders/1HyPIAKVM44XB4ef_h-1_CQiGHmveWTID)
-The full dataset can be downloaded from [here](https://pmc.ncbi.nlm.nih.gov/articles/PMC6785247/)
-Once downloaded, place the data in the same directory as the notebook.
+Before running the pipeline, you must download the required dataset. An example for one patient can be found [here](https://drive.google.com/drive/u/0/folders/1HyPIAKVM44XB4ef_h-1_CQiGHmveWTID)
+Once downloaded, place the data in the same directory as the notebook. (*add here the size of the sample-dataset)
 
