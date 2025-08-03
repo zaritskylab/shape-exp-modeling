@@ -42,10 +42,10 @@ See the [data/README.md](data/README.md) for CSV creation.
 
 ```bash
 # Shape → Protein
-python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction shape2pro
+python main.py --data_path data/ProcessedCellsTNBC.csv --direction shape2pro
 
 # Protein → Shape 
-python main.py --data_path data/ProcessedCellsTNBC_sample.csv --direction pro2shape
+python main.py --data_path data/ProcessedCellsTNBC.csv --direction pro2shape
 ```
 For a step-by-step demo of the pipeline (on a small dataset) from raw data to prediction, using shape-aware models on TNBC, visit [here](https://github.com/zaritskylab/shape-exp-modeling/blob/main/Demo/)
 
