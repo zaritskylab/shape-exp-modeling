@@ -2,7 +2,7 @@
 
 This directory contains the code to generate the TNBC csv for the full Shape-Expression Modeling framework.
 
-### Data (add, that the full data should be downloaded, and fix the naming!)
+### Data (full data should be downloaded from the links provided below)
 - **CellData**: Cells table, with normalized expression per segment.
 - **idx_to_cell_type**: Mapper, the cell type classification per segment.
 - **Raw imaging data**: Download and put in the same dir. Available at [Link](https://mibi-share.ionpath.com/), from the paper [Link](https://pmc.ncbi.nlm.nih.gov/articles/PMC6785247/)
